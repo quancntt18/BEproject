@@ -1,4 +1,5 @@
 // --- BƯỚC 1: IMPORT CÁC THƯ VIỆN VÀ MODULE CẦN THIẾT ---
+console.log("---[1] BẮT ĐẦU FILE SERVER.JS ---");
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -27,6 +28,7 @@ app.use(cors({
 app.use(express.json());
 // Middleware để phân tích body của request từ form (URL-encoded)
 app.use(express.urlencoded({ extended: true }));
+console.log("---[2] TRƯỚC KHI CẤU HÌNH SESSION ---");
 
 // Cấu hình session bằng cookie-session
 app.use(cookieSession({
@@ -34,10 +36,27 @@ app.use(cookieSession({
     keys: [process.env.SESSION_SECRET], // Khóa bí mật để mã hóa cookie
     maxAge: 24 * 60 * 60 * 1000 // Session tồn tại trong 24 giờ
 }));
+console.log("---[3] SAU KHI CẤU HÌNH COOKIE-SESSION ---");
+app.use(function(request, response, next) {
+    console.log("---[4] BÊN TRONG MIDDLEWARE VÁ LỖI ---");
+    if (request.session && !request.session.regenerate) {
+        request.session.regenerate = (cb) => {
+            cb();
+        }
+    }
+    if (request.session && !request.session.save) {
+        request.session.save = (cb) => {
+            cb();
+        }
+    }
+    next();
+});
+console.log("---[5] TRƯỚC KHI KHỞI TẠO PASSPORT ---");
 
 // Khởi tạo Passport và sử dụng session để quản lý đăng nhập
 app.use(passport.initialize());
 app.use(passport.session());
+console.log("---[6] SAU KHI KHỞI TẠO PASSPORT ---");
 
 // Middleware để phục vụ các file tĩnh (ảnh đã upload hoặc được tạo ra)
 app.use('/uploads', express.static('uploads'));
@@ -52,6 +71,7 @@ app.use('/auth', authRoutes);
 // Gắn các route xử lý ảnh (generate, history,...) vào đường dẫn /api/image
 // URL cuối cùng sẽ là /api/image/generate, /api/image/history, v.v.
 app.use('/api/image', imageRoutes);
+console.log("---[7] ĐÃ ĐĂNG KÝ ROUTES ---");
 
 
 // --- BƯỚC 5: KẾT NỐI CƠ SỞ DỮ LIỆU VÀ KHỞI CHẠY SERVER ---
